@@ -1,44 +1,44 @@
-import wppconnect from '@wppconnect-team/wppconnect';
+import wppconnect from "@wppconnect-team/wppconnect";
 
-import dotenv from 'dotenv';
-import { initializeNewAIChatSession, mainOpenAI } from './service/openai';
-import { splitMessages, sendMessagesWithDelay } from './util';
-import { mainGoogle } from './service/google';
+import dotenv from "dotenv";
+import { mainGoogle } from "./service/google";
+import { initializeNewAIChatSession, mainOpenAI } from "./service/openai";
+import { sendMessagesWithDelay, splitMessages } from "./util";
 
 dotenv.config();
-type AIOption = 'GPT' | 'GEMINI';
+type AIOption = "GPT" | "GEMINI";
 
 const messageBufferPerChatId = new Map();
 const messageTimeouts = new Map();
-const AI_SELECTED: AIOption = (process.env.AI_SELECTED as AIOption) || 'GEMINI';
+const AI_SELECTED: AIOption = (process.env.AI_SELECTED as AIOption) || "GEMINI";
 const MAX_RETRIES = 3;
 
-if (AI_SELECTED === 'GEMINI' && !process.env.GEMINI_KEY) {
+if (AI_SELECTED === "GEMINI" && !process.env.GEMINI_KEY) {
   throw Error(
-    'Você precisa colocar uma key do Gemini no .env! Crie uma gratuitamente em https://aistudio.google.com/app/apikey?hl=pt-br'
+    "Você precisa colocar uma key do Gemini no .env! Crie uma gratuitamente em https://aistudio.google.com/app/apikey?hl=pt-br",
   );
 }
 
 if (
-  AI_SELECTED === 'GPT' &&
+  AI_SELECTED === "GPT" &&
   (!process.env.OPENAI_KEY || !process.env.OPENAI_ASSISTANT)
 ) {
   throw Error(
-    'Para utilizar o GPT você precisa colocar no .env a sua key da openai e o id do seu assistante.'
+    "Para utilizar o GPT você precisa colocar no .env a sua key da openai e o id do seu assistante.",
   );
 }
 
 wppconnect
   .create({
-    session: 'sessionName',
+    session: "sessionName",
     catchQR: (base64Qrimg, asciiQR, attempts, urlCode) => {
-      console.log('Terminal qrcode: ', asciiQR);
+      console.log("Terminal qrcode: ", asciiQR);
     },
     statusFind: (statusSession, session) => {
-      console.log('Status Session: ', statusSession);
-      console.log('Session name: ', session);
+      console.log("Status Session: ", statusSession);
+      console.log("Session name: ", session);
     },
-    headless: 'new' as any,
+    headless: "new" as any,
   })
   .then((client) => {
     start(client);
@@ -51,13 +51,13 @@ async function start(client: wppconnect.Whatsapp): Promise<void> {
   client.onMessage((message) => {
     (async () => {
       if (
-        message.type === 'chat' &&
+        message.type === "chat" &&
         !message.isGroupMsg &&
-        message.chatId !== 'status@broadcast'
+        message.chatId !== "status@broadcast"
       ) {
         const chatId = message.chatId;
-        console.log('Mensagem recebida:', message.body);
-        if (AI_SELECTED === 'GPT') {
+        console.log("Mensagem recebida:", message.body);
+        if (AI_SELECTED === "GPT") {
           await initializeNewAIChatSession(chatId);
         }
 
@@ -73,18 +73,18 @@ async function start(client: wppconnect.Whatsapp): Promise<void> {
         if (messageTimeouts.has(chatId)) {
           clearTimeout(messageTimeouts.get(chatId));
         }
-        console.log('Aguardando novas mensagens...');
+        console.log("Aguardando novas mensagens...");
         messageTimeouts.set(
           chatId,
           setTimeout(() => {
             (async () => {
               const currentMessage = !messageBufferPerChatId.has(chatId)
                 ? message.body
-                : [...messageBufferPerChatId.get(chatId)].join(' \n ');
-              let answer = '';
+                : [...messageBufferPerChatId.get(chatId)].join(" \n ");
+              let answer = "";
               for (let attempt = 1; attempt <= MAX_RETRIES; attempt++) {
                 try {
-                  if (AI_SELECTED === 'GPT') {
+                  if (AI_SELECTED === "GPT") {
                     answer = await mainOpenAI({
                       currentMessage,
                       chatId,
@@ -103,7 +103,7 @@ async function start(client: wppconnect.Whatsapp): Promise<void> {
                 }
               }
               const messages = splitMessages(answer);
-              console.log('Enviando mensagens...');
+              console.log("Enviando mensagens...");
               await sendMessagesWithDelay({
                 client,
                 messages,
@@ -112,7 +112,7 @@ async function start(client: wppconnect.Whatsapp): Promise<void> {
               messageBufferPerChatId.delete(chatId);
               messageTimeouts.delete(chatId);
             })();
-          }, 15000)
+          }, 15000),
         );
       }
     })();

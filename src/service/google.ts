@@ -1,13 +1,13 @@
-import { type ChatSession, GoogleGenerativeAI } from '@google/generative-ai';
-import dotenv from 'dotenv';
+import { type ChatSession, GoogleGenerativeAI } from "@google/generative-ai";
+import dotenv from "dotenv";
 dotenv.config();
 
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_KEY!);
-const model = genAI.getGenerativeModel({ model: 'gemini-pro' });
+const model = genAI.getGenerativeModel({ model: "gemini-pro" });
 const activeChats = new Map();
 
 const getOrCreateChatSession = (chatId: string): ChatSession => {
-  console.log('activeChats.has(chatId)', activeChats.has(chatId));
+  console.log("activeChats.has(chatId)", activeChats.has(chatId));
   if (activeChats.has(chatId)) {
     const currentHistory = activeChats.get(chatId);
     console.log({ currentHistory, chatId });
@@ -17,12 +17,12 @@ const getOrCreateChatSession = (chatId: string): ChatSession => {
   }
   const history = [
     {
-      role: 'user',
-      parts: process.env.GEMINI_PROMPT ?? 'oi',
+      role: "user",
+      parts: process.env.GEMINI_PROMPT ?? "oi",
     },
     {
-      role: 'model',
-      parts: 'Olá, certo!',
+      role: "model",
+      parts: "Olá, certo!",
     },
   ];
   activeChats.set(chatId, history);
@@ -47,15 +47,15 @@ export const mainGoogle = async ({
   activeChats.set(chatId, [
     ...activeChats.get(chatId),
     {
-      role: 'user',
+      role: "user",
       parts: prompt,
     },
     {
-      role: 'model',
+      role: "model",
       parts: text,
     },
   ]);
 
-  console.log('Resposta Gemini: ', text);
+  console.log("Resposta Gemini: ", text);
   return text;
 };

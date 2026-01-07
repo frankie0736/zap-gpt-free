@@ -1,15 +1,15 @@
-import { type Whatsapp } from '@wppconnect-team/wppconnect';
+import type { Whatsapp } from "@wppconnect-team/wppconnect";
 
 export function splitMessages(text: string): string[] {
   const complexPattern =
     /(http[s]?:\/\/[^\s]+)|(www\.[^\s]+)|([^\s]+@[^\s]+\.[^\s]+)|(["'].*?["'])|(\b\d+\.\s)|(\w+\.\w+)/g;
   const placeholders = text.match(complexPattern) ?? [];
 
-  const placeholder = 'PLACEHOLDER_';
+  const placeholder = "PLACEHOLDER_";
   let currentIndex = 0;
   const textWithPlaceholders = text.replace(
     complexPattern,
-    () => `${placeholder}${currentIndex++}`
+    () => `${placeholder}${currentIndex++}`,
   );
 
   const splitPattern = /(?<!\b\d+\.\s)(?<!\w+\.\w+)[^.?!]+(?:[.?!]+["']?|$)/g;
@@ -19,8 +19,8 @@ export function splitMessages(text: string): string[] {
     parts = parts.map((part) =>
       placeholders.reduce(
         (acc, val, idx) => acc.replace(`${placeholder}${idx}`, val),
-        part
-      )
+        part,
+      ),
     );
   }
 
@@ -42,10 +42,10 @@ export async function sendMessagesWithDelay({
     client
       .sendText(targetNumber, msg.trimStart())
       .then((result) => {
-        console.log('Mensagem enviada:', result.body);
+        console.log("Mensagem enviada:", result.body);
       })
       .catch((erro) => {
-        console.error('Erro ao enviar mensagem:', erro);
+        console.error("Erro ao enviar mensagem:", erro);
       });
   }
 }

@@ -1,5 +1,5 @@
-import OpenAI from 'openai';
-import dotenv from 'dotenv';
+import dotenv from "dotenv";
+import OpenAI from "openai";
 dotenv.config();
 
 let assistant: OpenAI.Beta.Assistants.Assistant;
@@ -8,13 +8,13 @@ let openai: OpenAI;
 const activeChats = new Map();
 
 export async function initializeNewAIChatSession(
-  chatId: string
+  chatId: string,
 ): Promise<void> {
   openai = new OpenAI({
     apiKey: process.env.OPENAI_KEY,
   });
   assistant = await openai.beta.assistants.retrieve(
-    process.env.OPENAI_ASSISTANT!
+    process.env.OPENAI_ASSISTANT!,
   );
   if (activeChats.has(chatId)) return;
   const thread = await openai.beta.threads.create();
@@ -30,7 +30,7 @@ export async function mainOpenAI({
 }): Promise<string> {
   const thread = activeChats.get(chatId) as OpenAI.Beta.Threads.Thread;
   await openai.beta.threads.messages.create(thread.id, {
-    role: 'user',
+    role: "user",
     content: currentMessage,
   });
 
@@ -56,14 +56,14 @@ async function checkRunStatus({
     const verify = async (): Promise<void> => {
       const runStatus = await openai.beta.threads.runs.retrieve(
         threadId,
-        runId
+        runId,
       );
 
-      if (runStatus.status === 'completed') {
+      if (runStatus.status === "completed") {
         const messages = await openai.beta.threads.messages.list(threadId);
         resolve(messages);
       } else {
-        console.log('Aguardando resposta da OpenAI...');
+        console.log("Aguardando resposta da OpenAI...");
         setTimeout(verify, 3000);
       }
     };
